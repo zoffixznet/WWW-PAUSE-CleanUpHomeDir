@@ -12,7 +12,7 @@ BEGIN {
     use_ok('File::Basename');
     use_ok('Devel::TakeHashArgs');
     use_ok('Sort::Versions');
-    use_ok('Class::Data::Accessor');
+    use_ok('Class::Accessor::Grouped');
     use_ok('WWW::PAUSE::CleanUpHomeDir');
 }
 

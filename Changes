@@ -1,5 +1,8 @@
 Revision history for WWW-PAUSE-CleanUpHomeDir
 
+1.001002   2015-03-24
+        - Fixed failing tests
+
 1.001001   2015-03-24
         - Repackaged to use Dist::Zilla
         - Swapped deprecated Class::Data::Accessor
