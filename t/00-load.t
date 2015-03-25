@@ -13,7 +13,7 @@ BEGIN {
     use_ok('Devel::TakeHashArgs');
     use_ok('Sort::Versions');
     use_ok('Class::Data::Accessor');
-	use_ok('WWW::PAUSE::CleanUpHomeDir');
+    use_ok('WWW::PAUSE::CleanUpHomeDir');
 }
 
 diag( "Testing WWW::PAUSE::CleanUpHomeDir $WWW::PAUSE::CleanUpHomeDir::VERSION, Perl $], $^X" );
@@ -37,4 +37,3 @@ can_ok($o, qw(
 ));
 
 isa_ok($o->_mech, 'WWW::Mechanize');
- 

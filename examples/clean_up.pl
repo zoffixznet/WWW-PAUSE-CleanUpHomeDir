@@ -36,6 +36,7 @@ my $deleted_ref = $pause->clean_up(\@to_delete)
 print "Deleted: " . join "\n", @$deleted_ref, '';
 
 print "\nWould you like to undelete any of these files? "
+    . "Type their names, space separated"
         . "If not, just hit ENTER\n";
 
 my @to_undelete = split ' ', <STDIN>;

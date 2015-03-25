@@ -12,8 +12,8 @@ use HTML::TokeParser::Simple;
 use File::Basename;
 use Devel::TakeHashArgs;
 use Sort::Versions;
-use base 'Class::Data::Accessor';
-__PACKAGE__->mk_classaccessors (qw(
+use base 'Class::Accessor::Grouped';
+__PACKAGE__->mk_group_accessors(simple => qw(
     error
     last_list
     deleted_list
@@ -107,14 +107,22 @@ sub list_old {
         my ($na, $va) = $a =~ /(.+)-(\d.+)/;
         my ($nb, $vb) = $b =~ /(.+)-(\d.+)/;
         $na cmp $nb || versioncmp($va, $vb);
-    } keys %files;
+    } grep !/
+        -(?!.*-)  # last dash in the filename
+        .*(TRIAL|_) # trial versions
+    /x, keys %files;
+
     my @old;
     my $re = qr/([^.]+)-/;
     for ( 0 .. $#files-1) {
         my $name      = ($files[ $_   ] =~ /$re/)[0];
         my $next_name = ($files[ $_+1 ] =~ /$re/)[0];
         next
-            unless defined $name and defined $next_name;
+            unless ( defined $name and defined $next_name )
+                or $next_name =~ /
+                    -(?!.*-)  # last dash in the filename
+                    .*(TRIAL|_) # trial versions
+                /x;
 
         push @old, $files[$_]
             if $name eq $next_name;
@@ -260,18 +268,22 @@ __END__
 
 =encoding utf8
 
+=for stopwords AnnoCPAN Haryanto Mengu Mengué RT SHARYANTO dists occured undeletion versioning dir
+
 =head1 NAME
 
 WWW::PAUSE::CleanUpHomeDir - the module to clean up old dists from your PAUSE home directory
 
 =head1 SYNOPSIS
 
+=for pod_spiffy start code section
+
     use strict;
     use warnings;
 
     use WWW::PAUSE::CleanUpHomeDir;
 
-    my $pause = WWW::PAUSE::CleanUpHomeDir->new( 'PAUSE_ID', PASSWORD' );
+    my $pause = WWW::PAUSE::CleanUpHomeDir->new( 'PAUSE_ID', 'PASSWORD' );
 
     $pause->fetch_list
         or die $pause->error;
@@ -303,6 +315,8 @@ WWW::PAUSE::CleanUpHomeDir - the module to clean up old dists from your PAUSE ho
         or die $pause->error;
 
     print "Success..\n";
+
+=for pod_spiffy end code section
 
 =head1 DESCRIPTION
 
@@ -393,7 +407,7 @@ file is scheduled for deletion.
 
     my $last_list_ref = $pause->last_list;
 
-Must be called after a successfull call to C<fetch_list()> method.
+Must be called after a successful call to C<fetch_list()> method.
 Takes no arguments, returns the same hashref as last call to C<fetch_list()>
 returned.
 
@@ -462,7 +476,7 @@ the call will cause L<WWW::Mechanize> to croak on you.
 
     my $last_deleted_files_ref = $pause->deleted_list;
 
-Must be called after a successfull call to C<clean_up()>.
+Must be called after a successful call to C<clean_up()>.
 Takes no arguments, returns the same return value last call to C<clean_up()>
 returned.
 
@@ -480,7 +494,7 @@ reason for failure will be available via C<error()> method. On success
 returns an arrayref of files which were undeleted. Takes one optional
 argument which must be an arrayref of files to undelete, if the argument
 is not specified will use list stored in C<deleted_list()>.
-B<Note:> a successfull call to this method will reset list stored in
+B<Note:> a successful call to this method will reset list stored in
 C<deleted_list()>
 but will B<NOT> reset list stored in C<last_list()>, which will be incorrect
 after undeletion (well, only the C<status> keys will present incorrect
@@ -493,7 +507,7 @@ B<Note 2:> if either the file you specified does no exist
 
     my $last_error = $pause->error;
 
-Takes no arguments, returns last error (if any) which occured during
+Takes no arguments, returns last error (if any) which occurred during
 the calls to other methods.
 
 =head1 EXAMPLES
@@ -505,7 +519,46 @@ can be used for cleaning up your PAUSE home directory.
 
 L<http://pause.perl.org>
 
-=head1 BUG REPORTS AND CONTRIBUTIONS
+=for pod_spiffy hr
+
+=head1 REPOSITORY
+
+=for pod_spiffy start github section
+
+Fork this module on GitHub:
+L<https://github.com/zoffixznet/WWW-PAUSE-CleanUpHomeDir>
+
+=for pod_spiffy end github section
+
+=head1 BUGS AND CAVEATS
+
+=for pod_spiffy start bugs section
+
+I have only one PAUSE account which is inadequate for proper testing.
+Double check the results to make sure the module works properly for you
+when first using it.
+
+To report bugs or request features, please use
+L<https://github.com/zoffixznet/WWW-PAUSE-CleanUpHomeDir/issues>
+
+If you can't access GitHub, you can email your request
+to C<bug-www-pause-cleanuphomedir at rt.cpan.org>
+
+=for pod_spiffy end bugs section
+
+=head1 AUTHOR
+
+=for pod_spiffy start author section
+
+=for pod_spiffy author ZOFFIX
+
+=for text Zoffix Znet <zoffix at cpan.org>
+
+=for pod_spiffy end author section
+
+=head1 CONTRIBUTORS
+
+=for pod_spiffy start contributors section
 
 =over 4
 
@@ -515,54 +568,12 @@ L<http://pause.perl.org>
 
 =back
 
-=head1 AUTHOR
+=for pod_spiffy end contributors section
 
-Zoffix Znet, C<< <zoffix at cpan.org> >>
-(L<http://zoffix.com>, L<http://haslayout.net>)
+=head1 LICENSE
 
-=head1 BUGS AND CAVEATS
-
-I have only one PAUSE account which is inadequate for proper testing.
-Double check the results to make sure the module works properly for you
-when first using it.
-
-Please report any bugs or feature requests to C<bug-www-pause-cleanuphomedir at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=WWW-PAUSE-CleanUpHomeDir>.  I will be notified, and then you'll
-automatically be notified of progress on your bug as I make changes.
-
-=head1 SUPPORT
-
-You can find documentation for this module with the perldoc command.
-
-    perldoc WWW::PAUSE::CleanUpHomeDir
-
-You can also look for information at:
-
-=over 4
-
-=item * RT: CPAN's request tracker
-
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=WWW-PAUSE-CleanUpHomeDir>
-
-=item * AnnoCPAN: Annotated CPAN documentation
-
-L<http://annocpan.org/dist/WWW-PAUSE-CleanUpHomeDir>
-
-=item * CPAN Ratings
-
-L<http://cpanratings.perl.org/d/WWW-PAUSE-CleanUpHomeDir>
-
-=item * Search CPAN
-
-L<http://search.cpan.org/dist/WWW-PAUSE-CleanUpHomeDir>
-
-=back
-
-=head1 COPYRIGHT & LICENSE
-
-Copyright 2008 Zoffix Znet, all rights reserved.
-
-This program is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself.
+You can use and distribute this module under the same terms as Perl itself.
+See the C<LICENSE> file included in this distribution for complete
+details.
 
 =cut
